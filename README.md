@@ -47,7 +47,7 @@
     </td>
     <td align="center" width="50%">
       <img src="docs/screenshots/percentage-salary.png" alt="8 percent of salary example" width="100%"><br>
-      <em>₹18,000 salary × 8% = ₹1,440</em>
+      <em>8% of ₹18,000 salary = ₹1,440 salary</em>
     </td>
   </tr>
 </table>
@@ -74,7 +74,7 @@ Every mode also shows **₹/gram and ₹/kg**, updates while you type, validates
 
 - 💳 **EMI** — monthly instalment, total interest and total payable; months or years.
 - 📈 **SIP** — invested amount, estimated returns and year-by-year growth bars.
-- 📊 **Percentage** — 6 modes: marks → grade, X% of Y, "X is what % of Y", increase/decrease, **profit %** (₹450 → ₹540 = **20%**) and **salary %** (₹18,000 × 8% = **₹1,440**).
+- 📊 **Percentage** — 6 modes: marks → grade, X% of Y, "X is what % of Y", increase/decrease, **profit %** (₹450 → ₹540 = **20%**) and **salary %** (8% of ₹18,000 salary = **₹1,440 salary**).
 - 💰 **Profit & Loss** — net profit/loss, margin, markup, with optional quantity.
 
 ---
