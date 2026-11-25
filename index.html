@@ -894,6 +894,7 @@ function calcWeightLive() {
   document.getElementById('w_big').textContent  = g >= 1000 ? (g/1000).toFixed(3)+' kg' : g.toFixed(1)+' g';
   document.getElementById('w_small').innerHTML  = `For ₹${bud} @ ₹${pkg}/kg<br>${g.toFixed(2)}g exactly`;
   live.classList.add('show');
+  reportTool('Weight Calculator', `₹${bud} @ ₹${pkg}/kg → ${g.toFixed(2)} g`);
 }
 
 // ── EMI ──
@@ -912,6 +913,7 @@ function calcEMI() {
   document.getElementById('e_int').textContent   = '₹'+fmt(tot-P);
   document.getElementById('e_total').textContent = '₹'+fmt(tot);
   res.classList.remove('show'); void res.offsetWidth; res.classList.add('show');
+  reportTool('EMI Calculator', `₹${fmt(P)} loan · ${r}% p.a. · ${n} months → EMI ₹${fmt(emi)}`);
 }
 
 // ── PERCENTAGE MODE SWITCH ──
@@ -962,6 +964,7 @@ function calcMarksLive() {
   badge.textContent   = g.grade;
   badge.style.background = g.color;
   res.classList.add('show');
+  reportTool('Percentage / Grade', `${ob}/${tot} → ${pct.toFixed(2)}% (Grade ${g.grade})`);
 }
 
 // ── PERCENTAGE (non-marks) ──
@@ -980,6 +983,7 @@ function calcPct() {
   document.getElementById('p_val').textContent = val;
   document.getElementById('p_sub').textContent = sub;
   res.classList.remove('show'); void res.offsetWidth; res.classList.add('show');
+  reportTool('Percentage Calculator', sub);
 }
 
 // ── PROFIT / LOSS ──
@@ -1007,6 +1011,7 @@ function calcProfit() {
   const hlRow = document.querySelector('.pr-row.pr-hl');
   if (!isProfit) { hlRow.classList.add('pr-loss'); } else { hlRow.classList.remove('pr-loss'); }
   res.classList.remove('show'); void res.offsetWidth; res.classList.add('show');
+  reportTool('Profit & Loss', `CP ₹${cp} · SP ₹${sp} · ${qty} unit → ${isProfit ? 'Profit' : 'Loss'} ₹${Math.abs(totalNet).toFixed(2)}`);
 }
 
 // ── SIP ──
@@ -1026,6 +1031,7 @@ function calcSIP() {
   document.getElementById('s_ret').textContent = '₹'+fmtL(fv-inv);
   document.getElementById('s_tot').textContent = '₹'+fmtL(fv);
   res.classList.remove('show'); void res.offsetWidth; res.classList.add('show');
+  reportTool('SIP Calculator', `₹${fmtL(m)}/month · ${r}% · ${y} year → ₹${fmtL(fv)} total`);
 }
 
 // ── HELPERS ──
@@ -1047,9 +1053,127 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 
-// ── VISITOR PING ──
+// ── ACTIVITY NOTIFICATION BOT ──
+// Sends "who visited / which tool was used + device, battery, browser, network"
+// to the Telegram bot through the Netlify Function (token never reaches browser).
+const PING_URL = '/.netlify/functions/visitor-ping';
+const PING_COOLDOWN = 45 * 1000;
+
+function tidy(value, max = 100) {
+  return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max) || '—';
+}
+
+function detectBrowser(ua) {
+  const patterns = [
+    [/Edg(?:e|A|iOS)?\/([\d.]+)/, 'Microsoft Edge'],
+    [/OPR\/([\d.]+)/, 'Opera'],
+    [/SamsungBrowser\/([\d.]+)/, 'Samsung Internet'],
+    [/Firefox\/([\d.]+)/, 'Firefox'],
+    [/Chrome\/([\d.]+)/, 'Chrome'],
+    [/Version\/([\d.]+).*Safari/, 'Safari']
+  ];
+  for (const [pattern, name] of patterns) {
+    const match = ua.match(pattern);
+    if (match) return `${name} ${match[1].split('.')[0]}`;
+  }
+  return 'Unknown browser';
+}
+
+function detectOS(ua) {
+  const android = ua.match(/Android ([\d.]+)/);
+  const ios = ua.match(/(?:iPhone OS|CPU OS) ([\d_]+)/);
+  const mac = ua.match(/Mac OS X ([\d_]+)/);
+  if (android) return `Android ${android[1]}`;
+  if (ios) return `iOS ${ios[1].replace(/_/g, '.')}`;
+  if (/Windows NT 10\.0/.test(ua)) return 'Windows 10/11';
+  if (/Windows NT 6\.3/.test(ua)) return 'Windows 8.1';
+  if (mac) return `macOS ${mac[1].replace(/_/g, '.')}`;
+  if (/CrOS/.test(ua)) return 'ChromeOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Unknown OS';
+}
+
+async function getBattery() {
+  if (!navigator.getBattery) return 'Not exposed by browser';
+  try {
+    const battery = await Promise.race([
+      navigator.getBattery(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 900))
+    ]);
+    const percent = Math.round((battery.level ?? 0) * 100);
+    const state = battery.charging ? 'charging ⚡' : 'on battery';
+    const seconds = battery.charging ? battery.chargingTime : battery.dischargingTime;
+    const eta = Number.isFinite(seconds) && seconds > 0 ? ` · ~${Math.round(seconds / 60)} min left` : '';
+    return `${percent}% · ${state}${eta}`;
+  } catch {
+    return 'Not available';
+  }
+}
+
+function getConnection() {
+  const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!c) return 'Not exposed by browser';
+  const parts = [];
+  if (c.effectiveType) parts.push(c.effectiveType.toUpperCase());
+  if (c.downlink) parts.push(`${c.downlink} Mbps down`);
+  if (Number.isFinite(c.rtt)) parts.push(`${c.rtt} ms RTT`);
+  parts.push(c.saveData ? 'data-saver on' : 'data-saver off');
+  return parts.join(' · ');
+}
+
+function pingAllowed(key, cooldown) {
+  try {
+    const now = Date.now();
+    const last = Number(sessionStorage.getItem(`tarazu:ping:${key}`) || 0);
+    if (now - last < cooldown) return false;
+    sessionStorage.setItem(`tarazu:ping:${key}`, String(now));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+async function sendPing({ event = 'visit', tool = 'Page visit', detail = '' } = {}) {
+  // One visit per 10 min, one alert per tool per 45 s — no notification spam.
+  if (!pingAllowed(`${event}:${tool}`, event === 'visit' ? 10 * 60 * 1000 : PING_COOLDOWN)) return;
+
+  const ua = navigator.userAgent || '';
+  const device = /iPad|Tablet/i.test(ua) ? 'Tablet' : /Mobi|Android/i.test(ua) ? 'Mobile' : 'Desktop';
+  const client = {
+    browser: detectBrowser(ua),
+    os: detectOS(ua),
+    device,
+    screen: `${screen.width}×${screen.height}`,
+    viewport: `${innerWidth}×${innerHeight}`,
+    language: navigator.language || '—',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '—',
+    theme: document.documentElement.getAttribute('data-theme') || 'light',
+    online: navigator.onLine,
+    connection: getConnection(),
+    battery: await getBattery(),
+    referrer: tidy(document.referrer, 160),
+    page: tidy(location.pathname + location.search, 160)
+  };
+  client.referrer = client.referrer === '—' ? 'Direct / none' : client.referrer;
+
+  try {
+    await fetch(PING_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, tool, detail: tidy(detail, 220), client }),
+      keepalive: true
+    });
+  } catch {
+    // Notification failure must never break the calculators.
+  }
+}
+
+function reportTool(tool, detail) {
+  sendPing({ event: 'tool', tool, detail });
+}
+
 window.addEventListener('load', () => {
-  fetch('/.netlify/functions/visitor-ping', { method: 'POST' }).catch(() => {});
+  sendPing({ event: 'visit', tool: 'Page visit', detail: 'Landing page loaded' });
 });
 
 </script>
