@@ -23,6 +23,14 @@ function escapeHtml(value) {
   })[ch]);
 }
 
+function b(value) {
+  return `<b>${escapeHtml(value)}</b>`;
+}
+
+function code(value) {
+  return `<code>${escapeHtml(value)}</code>`;
+}
+
 function clean(value, max) {
   return String(value ?? "")
     .replace(/[\u0000-\u001f\u007f]/g, " ")
@@ -122,44 +130,48 @@ function buildMessage({ eventType, tool, detail, query, result, client, network 
     timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "medium"
   });
 
+  const who = [client.device, deviceEmoji(client.device), client.browser, network.ip]
+    .filter(Boolean).join(" · ");
   const searchRows = [];
   if (eventType === "tool") {
-    searchRows.push(`Tool: <b>${escapeHtml(tool)}</b>`);
-    if (query) searchRows.push(`Search: ${escapeHtml(query)}`);
+    searchRows.push(`<b>Tool:</b> ${b(tool)}`);
+    if (query) searchRows.push(`<b>Search:</b> ${code(query)}`);
     const finalResult = result || detail;
-    if (finalResult) searchRows.push(`Result: <b>${escapeHtml(finalResult)}</b>`);
+    if (finalResult) searchRows.push(`<b>Answer:</b> ${b(finalResult)}`);
+    searchRows.push(`<b>By:</b> ${b(who)}`);
   } else {
     const page = client.page && client.page !== "Unknown" ? client.page : "/";
-    searchRows.push(`Page: <b>${escapeHtml(page)}</b>`);
-    searchRows.push(`Status: ${escapeHtml(detail || "Landing page loaded")}`);
+    searchRows.push(`<b>Page:</b> ${b(page)}`);
+    searchRows.push(`<b>Status:</b> ${b(detail || "Landing page loaded")}`);
+    searchRows.push(`<b>By:</b> ${b(who)}`);
   }
 
   const location = [network.city, network.region, network.country].filter(Boolean).join(", ");
   const networkRows = [
-    `IP: ${escapeHtml(network.ip)}`,
-    `ISP: ${escapeHtml(network.isp)}`,
-    location ? `Location: ${escapeHtml(location)}` : null,
-    `Connection: ${escapeHtml(client.connection)}`
+    `<b>IP:</b> ${code(network.ip)}`,
+    `<b>ISP:</b> ${b(network.isp)}`,
+    location ? `<b>Where:</b> ${b(location)}` : null,
+    `<b>Net:</b> ${b(client.connection)}`
   ];
 
   const deviceRows = [
-    `Device: ${escapeHtml(client.device)} ${deviceEmoji(client.device)}`,
-    `OS: ${escapeHtml(client.os)} ${osEmoji(client.os)}`,
-    `Browser: ${escapeHtml(client.browser)}`,
-    `Screen: ${escapeHtml(client.screen)} (viewport ${escapeHtml(client.viewport)})`,
-    `Battery: 🔋 ${escapeHtml(client.battery)}`,
-    `Timezone: ${escapeHtml(client.timezone)}`,
-    `Language: ${escapeHtml(client.language)}`,
-    `Theme: ${escapeHtml(client.theme)} · Online: ${client.online ? "Yes" : "No"}`,
-    client.referrer && client.referrer !== "Unknown" ? `Referrer: ${escapeHtml(client.referrer)}` : null
+    `<b>Device:</b> ${b(client.device + " " + deviceEmoji(client.device))}`,
+    `<b>OS:</b> ${b(client.os + " " + osEmoji(client.os))}`,
+    `<b>Browser:</b> ${b(client.browser)}`,
+    `<b>Screen:</b> ${b(client.screen)} (viewport ${b(client.viewport)})`,
+    `<b>Battery:</b> 🔋 ${b(client.battery)}`,
+    `<b>Timezone:</b> ${b(client.timezone)}`,
+    `<b>Language:</b> ${b(client.language)}`,
+    `<b>Theme:</b> ${b(client.theme)} · <b>Online:</b> ${b(client.online ? "Yes" : "No")}`,
+    client.referrer && client.referrer !== "Unknown" ? `<b>Referrer:</b> ${b(client.referrer)}` : null
   ];
 
   return [
-    `⚡ TARAZU · ${eventType === "tool" ? "TOOL USED" : "NEW VISITOR"}`,
+    `⚡ <b>TARAZU · ${eventType === "tool" ? "TOOL USED" : "NEW VISITOR"}</b>`,
     "",
     "━━━━━━━━━━━━━━━━━━━━",
     "",
-    "🔍 <b>SEARCH &amp; RESULT</b>",
+    "🔍 <b>WHAT WAS SEARCHED</b>",
     ...tree(searchRows),
     "",
     "📍 <b>LOCATION &amp; NETWORK</b>",
@@ -168,9 +180,9 @@ function buildMessage({ eventType, tool, detail, query, result, client, network 
     "📱 <b>DEVICE DETAILS</b>",
     ...tree(deviceRows),
     "",
-    `🇮🇳 IST: <b>${escapeHtml(time)}</b>`,
+    `🇮🇳 <b>IST:</b> ${b(time)}`,
     "━━━━ ━━━━━━━━━━━━━━━━",
-    "Tarazu Bot · built for Harsh ✨"
+    "<b>Tarazu Bot</b> · built for Harsh ✨"
   ].join("\n").slice(0, 3800);
 }
 
