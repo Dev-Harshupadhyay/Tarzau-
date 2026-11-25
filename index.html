@@ -91,7 +91,6 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 .hdr.scrolled{border-bottom-color:var(--border);box-shadow:0 6px 24px rgba(15,14,12,.06)}
 .hdr-in{height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-d);font-weight:700;font-size:1.35rem;letter-spacing:-.02em}
-.brand-dot{width:10px;height:10px;border-radius:50%;background:var(--brand);animation:dot 2.6s ease-in-out infinite}
 @keyframes dot{0%,100%{box-shadow:0 0 0 0 rgba(var(--brand-rgb),.55)}50%{box-shadow:0 0 0 7px rgba(var(--brand-rgb),0)}}
 .nav{display:none;align-items:center;gap:2px}
 .nav a{position:relative;padding:8px 14px;border-radius:999px;font-weight:600;font-size:.93rem;color:var(--ink-2);transition:color var(--t-fast),background-color var(--t-fast)}
@@ -229,6 +228,8 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 .seg button[aria-checked="true"]{color:var(--ink)}
 @media(hover:hover){.seg button:hover{color:var(--ink)}}
 .seg-ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--n,2));border-radius:10px;background:var(--card);box-shadow:var(--sh-1),inset 0 -2px 0 var(--acc);transform:translateX(calc(var(--i,0) * 100%));transition:transform .45s var(--spring)}
+.tool-pct .seg button{font-size:.74rem;padding:0 3px}
+@media(max-width:380px){.tool-pct .seg button{font-size:.66rem}}
 @media(max-width:380px){.seg button{font-size:.76rem}}
 
 /* fields */
@@ -527,13 +528,49 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 .result.show.calm .r-body,.result.show.calm .r-row{animation:none}
 .result.show.calm .r-big::after{transition:none}
 
+
+/* ===================== Premium purple finish ===================== */
+:root{--purple:#8b5cf6;--purple-deep:#6d28d9;--purple-light:#c084fc;--purple-rgb:139,92,246}
+
+/* Primary + calculator buttons: purple, never lime or pink-only */
+.btn-primary{background:linear-gradient(100deg,var(--purple-deep),var(--purple) 48%,var(--purple-light));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 28px -8px rgba(var(--purple-rgb),.75),0 0 0 1px rgba(192,132,252,.25)}
+.btn-primary::after{background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.7) 50%,transparent 65%)}
+@media(hover:hover){.btn-primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 16px 36px -8px rgba(var(--purple-rgb),.9),0 0 24px rgba(var(--purple-rgb),.35)}}
+.btn-calc{color:#fff;background-color:var(--purple-deep);background-image:linear-gradient(100deg,#6d28d9,#a855f7 45%,#d946ef);background-size:220% 100%;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 10px 26px -10px rgba(var(--purple-rgb),.8)}
+[data-theme="dark"] .btn-calc{color:#fff;background-color:var(--purple-deep);background-image:linear-gradient(100deg,#6d28d9,#a855f7 45%,#d946ef)}
+@media(hover:hover){.btn-calc:hover{box-shadow:0 14px 34px -10px rgba(var(--purple-rgb),.95),0 0 0 4px rgba(168,85,247,.16),0 0 22px rgba(168,85,247,.35)}}
+
+/* Result panel: distinct purple glow + breathing animation */
+.result.show{border-color:rgba(168,85,247,.5)!important;background:linear-gradient(155deg,rgba(168,85,247,.14),transparent 60%),linear-gradient(0deg,rgba(139,92,246,.035),rgba(139,92,246,.035)),var(--card)!important;box-shadow:0 0 0 4px rgba(168,85,247,.1),0 24px 60px -26px rgba(168,85,247,.85),inset 0 0 34px rgba(168,85,247,.1)!important;animation:premiumGlow 3.6s ease-in-out infinite}
+.result.show::before{box-shadow:inset 0 0 0 1px rgba(192,132,252,.65),inset 0 0 30px rgba(168,85,247,.24)!important}
+@keyframes premiumGlow{0%,100%{box-shadow:0 0 0 4px rgba(168,85,247,.08),0 22px 52px -28px rgba(168,85,247,.65),inset 0 0 26px rgba(168,85,247,.08)}50%{box-shadow:0 0 0 5px rgba(168,85,247,.16),0 28px 72px -24px rgba(168,85,247,.95),inset 0 0 38px rgba(168,85,247,.2)}}
+.result.show .r-big{color:#7c3aed;text-shadow:0 0 24px rgba(168,85,247,.35)}
+[data-theme="dark"] .result.show .r-big{color:#e9d5ff}
+.result.show .ring .r-fill{stroke:#a855f7;filter:drop-shadow(0 0 7px rgba(168,85,247,.85))}
+.result.show .ring{animation:ringGlow 1.2s ease-out}
+@keyframes ringGlow{0%{filter:drop-shadow(0 0 0 rgba(168,85,247,0))}45%{filter:drop-shadow(0 0 16px rgba(168,85,247,.85))}100%{filter:drop-shadow(0 0 5px rgba(168,85,247,.4))}}
+
+/* Typing route: a glowing purple streak runs from the amount field to the result/ring */
+.flow-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;overflow:visible}
+.flow-line{fill:none;stroke:#a855f7;stroke-width:2.5;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(168,85,247,.95));opacity:.85}
+.flow-dot{fill:#fff;filter:drop-shadow(0 0 10px rgba(192,132,252,1)) drop-shadow(0 0 4px rgba(168,85,247,.9))}
+
+/* Purple accents everywhere the result lives */
+.hero h1 .dot{color:#8b5cf6!important}
+.result.show .r-big::after{background:linear-gradient(90deg,#7c3aed,#c084fc)!important}
+
+/* Richer clipboard toast */
+.toast{display:flex;align-items:center;gap:10px;background:linear-gradient(100deg,var(--purple-deep),var(--purple) 60%,var(--purple-light));color:#fff;border:1px solid rgba(255,255,255,.2);box-shadow:0 16px 40px -12px rgba(var(--purple-rgb),.9),inset 0 1px 0 rgba(255,255,255,.28)}
+.toast-ico{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2);font-size:.9rem;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+@media(prefers-reduced-motion:reduce){.result.show,.result.show .ring{animation:none!important}.flow-overlay{display:none}}
+
 </style>
 </head>
 <body>
 <a class="skip" href="#tools">Skip to the tools</a>
 
 <header class="hdr"><div class="wrap hdr-in">
-  <a class="brand" href="#top" aria-label="Tarazu, back to top"><span class="brand-dot" aria-hidden="true"></span>Tarazu</a>
+  <a class="brand" href="#top" aria-label="Tarazu, back to top">Tarazu</a>
   <nav class="nav" aria-label="Main">
     <a href="#tools">Tools</a><a href="#about">About</a><a href="#contact">Contact</a>
   </nav>
@@ -546,7 +583,7 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 <div class="scrim" id="scrim" aria-hidden="true"></div>
 <aside class="drawer" id="drawer" aria-label="Menu and developer profile" aria-hidden="true" inert>
   <div class="dr-head">
-    <a class="brand" href="#top" tabindex="-1"><span class="brand-dot" aria-hidden="true"></span>Tarazu</a>
+    <a class="brand" href="#top" tabindex="-1">Tarazu</a>
     <button type="button" class="ibtn" id="drClose" aria-label="Close menu"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="dr-body">
@@ -590,7 +627,7 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 <section id="tools" class="sec" aria-labelledby="tools-h"><div class="wrap">
   <div class="sec-h reveal"><span class="eyebrow">Calculators</span><h2 id="tools-h">Every calculation, one tap away.</h2><p>The weight tool updates as you type. For the others, enter your values and press the button.</p></div>
   <div class="tools">
-<article class="tool tool-weight reveal" id="t-weight" data-tool="weight" style="--d:0s" aria-labelledby="h-weight"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v17M8 20h8M4 7h16"/><path d="M6 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7zM18 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7z"/></svg></span><div class="tool-t"><h3 id="h-weight">Weight Calculator</h3><p>Budget → grams, grams → price, or find the per-kg rate from any pack size. Live.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset Weight Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="seg" role="radiogroup" aria-label="Weight mode" data-key="mode"><button type="button" role="radio" aria-checked="false" data-val="toWeight">₹ → grams</button><button type="button" role="radio" aria-checked="false" data-val="toPrice">grams → ₹</button><button type="button" role="radio" aria-checked="false" data-val="toRate">₹/kg finder</button><span class="seg-ind" aria-hidden="true"></span></div><div class="row2"><div class="field" data-field="rate"><label for="w-rate"><span data-lbl>Price per kg</span></label><div class="ctrl has-pre has-suf"><span class="pre">₹</span><input id="w-rate" name="rate" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="w-rate-err"><span class="suf">/ kg</span></div><p class="ferr" id="w-rate-err"></p></div><div class="field" data-field="amount"><label for="w-amount"><span data-lbl>Customer's budget</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="w-amount" name="amount" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="w-amount-err"><span class="suf" hidden></span></div><p class="ferr" id="w-amount-err"></p></div></div></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v17M8 20h8M4 7h16"/><path d="M6 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7zM18 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7z"/></svg><span>Enter the price per kg and the customer's budget. The weight appears here as you type.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-emi reveal" id="t-emi" data-tool="emi" style="--d:0.08s" aria-labelledby="h-emi"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></span><div class="tool-t"><h3 id="h-emi">EMI Calculator</h3><p>Monthly instalment and total interest on a loan.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset EMI Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="field" data-field="principal"><label for="e-principal"><span data-lbl>Loan amount</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="e-principal" name="principal" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="e-principal-err"><span class="suf" hidden></span></div><p class="ferr" id="e-principal-err"></p></div><div class="row2"><div class="field" data-field="rate"><label for="e-rate"><span data-lbl>Interest rate</span></label><div class="ctrl has-suf"><span class="pre" hidden></span><input id="e-rate" name="rate" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="e-rate-err"><span class="suf">% / yr</span></div><p class="ferr" id="e-rate-err"></p></div><div class="field" data-field="tenure"><label for="e-tenure"><span data-lbl>Tenure</span></label><div class="ctrl"><span class="pre" hidden></span><input id="e-tenure" name="tenure" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="e-tenure-err"><span class="suf" hidden></span></div><p class="ferr" id="e-tenure-err"></p></div></div><div class="seg" role="radiogroup" aria-label="Tenure unit" data-key="unit"><button type="button" role="radio" aria-checked="false" data-val="m">Months</button><button type="button" role="radio" aria-checked="false" data-val="y">Years</button><span class="seg-ind" aria-hidden="true"></span></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">Calculate EMI<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg><span>Enter the amount, rate and tenure, then press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-sip reveal" id="t-sip" data-tool="sip" style="--d:0s" aria-labelledby="h-sip"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><div class="tool-t"><h3 id="h-sip">SIP Calculator</h3><p>See how a monthly investment grows, year by year.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset SIP Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="field" data-field="monthly"><label for="s-monthly"><span data-lbl>Monthly amount</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="s-monthly" name="monthly" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="s-monthly-err"><span class="suf" hidden></span></div><p class="ferr" id="s-monthly-err"></p></div><div class="row2"><div class="field" data-field="rate"><label for="s-rate"><span data-lbl>Expected return</span></label><div class="ctrl has-suf"><span class="pre" hidden></span><input id="s-rate" name="rate" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="s-rate-err"><span class="suf">% / yr</span></div><p class="ferr" id="s-rate-err"></p></div><div class="field" data-field="years"><label for="s-years"><span data-lbl>Duration</span></label><div class="ctrl has-suf"><span class="pre" hidden></span><input id="s-years" name="years" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="s-years-err"><span class="suf">years</span></div><p class="ferr" id="s-years-err"></p></div></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">See returns<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Enter the amount, return and duration, then press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-pct reveal" id="t-pct" data-tool="pct" style="--d:0.08s" aria-labelledby="h-pct"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span><div class="tool-t"><h3 id="h-pct">Percentage Calculator</h3><p>Marks and grade, X% of Y, what percent, and change.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset Percentage Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="seg" role="radiogroup" aria-label="Percentage mode" data-key="mode"><button type="button" role="radio" aria-checked="false" data-val="marks">Marks</button><button type="button" role="radio" aria-checked="false" data-val="of">X% of Y</button><button type="button" role="radio" aria-checked="false" data-val="what">What %</button><button type="button" role="radio" aria-checked="false" data-val="change">Change</button><span class="seg-ind" aria-hidden="true"></span></div><div class="row2"><div class="field" data-field="a"><label for="p-a"><span data-lbl>Marks obtained</span></label><div class="ctrl"><span class="pre" hidden></span><input id="p-a" name="a" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="p-a-err"><span class="suf" hidden></span></div><p class="ferr" id="p-a-err"></p></div><div class="field" data-field="b"><label for="p-b"><span data-lbl>Total marks</span></label><div class="ctrl"><span class="pre" hidden></span><input id="p-b" name="b" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="p-b-err"><span class="suf" hidden></span></div><p class="ferr" id="p-b-err"></p></div></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">Calculate percentage<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg><span>Enter your marks and press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-pl reveal" id="t-pl" data-tool="pl" style="--d:0.16s" aria-labelledby="h-pl"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2V3z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><div class="tool-t"><h3 id="h-pl">Profit &amp; Loss</h3><p>Profit, margin and markup from cost and selling price.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset Profit &amp; Loss" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="row2"><div class="field" data-field="cp"><label for="l-cp"><span data-lbl>Cost price</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="l-cp" name="cp" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="l-cp-err"><span class="suf" hidden></span></div><p class="ferr" id="l-cp-err"></p></div><div class="field" data-field="sp"><label for="l-sp"><span data-lbl>Selling price</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="l-sp" name="sp" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="l-sp-err"><span class="suf" hidden></span></div><p class="ferr" id="l-sp-err"></p></div></div><div class="field" data-field="qty"><label for="l-qty"><span data-lbl>Quantity</span><em>optional</em></label><div class="ctrl"><span class="pre" hidden></span><input id="l-qty" name="qty" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="l-qty-err"><span class="suf" hidden></span></div><p class="ferr" id="l-qty-err"></p></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">Check profit / loss<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2V3z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>Enter the cost and selling price, then press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article>
+<article class="tool tool-weight reveal" id="t-weight" data-tool="weight" style="--d:0s" aria-labelledby="h-weight"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v17M8 20h8M4 7h16"/><path d="M6 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7zM18 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7z"/></svg></span><div class="tool-t"><h3 id="h-weight">Weight Calculator</h3><p>Budget → grams, grams → price, or find the per-kg rate from any pack size. Live.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset Weight Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="seg" role="radiogroup" aria-label="Weight mode" data-key="mode"><button type="button" role="radio" aria-checked="false" data-val="toWeight">₹ → grams</button><button type="button" role="radio" aria-checked="false" data-val="toPrice">grams → ₹</button><button type="button" role="radio" aria-checked="false" data-val="toRate">₹/kg finder</button><span class="seg-ind" aria-hidden="true"></span></div><div class="row2"><div class="field" data-field="rate"><label for="w-rate"><span data-lbl>Price per kg</span></label><div class="ctrl has-pre has-suf"><span class="pre">₹</span><input id="w-rate" name="rate" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="w-rate-err"><span class="suf">/ kg</span></div><p class="ferr" id="w-rate-err"></p></div><div class="field" data-field="amount"><label for="w-amount"><span data-lbl>Customer's budget</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="w-amount" name="amount" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="w-amount-err"><span class="suf" hidden></span></div><p class="ferr" id="w-amount-err"></p></div></div></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v17M8 20h8M4 7h16"/><path d="M6 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7zM18 7l-3.2 7a3.2 3.2 0 0 0 6.4 0L6 7z"/></svg><span>Enter the price per kg and the customer's budget. The weight appears here as you type.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-emi reveal" id="t-emi" data-tool="emi" style="--d:0.08s" aria-labelledby="h-emi"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></span><div class="tool-t"><h3 id="h-emi">EMI Calculator</h3><p>Monthly instalment and total interest on a loan.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset EMI Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="field" data-field="principal"><label for="e-principal"><span data-lbl>Loan amount</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="e-principal" name="principal" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="e-principal-err"><span class="suf" hidden></span></div><p class="ferr" id="e-principal-err"></p></div><div class="row2"><div class="field" data-field="rate"><label for="e-rate"><span data-lbl>Interest rate</span></label><div class="ctrl has-suf"><span class="pre" hidden></span><input id="e-rate" name="rate" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="e-rate-err"><span class="suf">% / yr</span></div><p class="ferr" id="e-rate-err"></p></div><div class="field" data-field="tenure"><label for="e-tenure"><span data-lbl>Tenure</span></label><div class="ctrl"><span class="pre" hidden></span><input id="e-tenure" name="tenure" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="e-tenure-err"><span class="suf" hidden></span></div><p class="ferr" id="e-tenure-err"></p></div></div><div class="seg" role="radiogroup" aria-label="Tenure unit" data-key="unit"><button type="button" role="radio" aria-checked="false" data-val="m">Months</button><button type="button" role="radio" aria-checked="false" data-val="y">Years</button><span class="seg-ind" aria-hidden="true"></span></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">Calculate EMI<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg><span>Enter the amount, rate and tenure, then press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-sip reveal" id="t-sip" data-tool="sip" style="--d:0s" aria-labelledby="h-sip"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><div class="tool-t"><h3 id="h-sip">SIP Calculator</h3><p>See how a monthly investment grows, year by year.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset SIP Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="field" data-field="monthly"><label for="s-monthly"><span data-lbl>Monthly amount</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="s-monthly" name="monthly" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="s-monthly-err"><span class="suf" hidden></span></div><p class="ferr" id="s-monthly-err"></p></div><div class="row2"><div class="field" data-field="rate"><label for="s-rate"><span data-lbl>Expected return</span></label><div class="ctrl has-suf"><span class="pre" hidden></span><input id="s-rate" name="rate" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="s-rate-err"><span class="suf">% / yr</span></div><p class="ferr" id="s-rate-err"></p></div><div class="field" data-field="years"><label for="s-years"><span data-lbl>Duration</span></label><div class="ctrl has-suf"><span class="pre" hidden></span><input id="s-years" name="years" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="s-years-err"><span class="suf">years</span></div><p class="ferr" id="s-years-err"></p></div></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">See returns<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Enter the amount, return and duration, then press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-pct reveal" id="t-pct" data-tool="pct" style="--d:0.08s" aria-labelledby="h-pct"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span><div class="tool-t"><h3 id="h-pct">Percentage Calculator</h3><p>Marks, X% of a number, profit %, salary % and change — all in one place.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset Percentage Calculator" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="seg" role="radiogroup" aria-label="Percentage mode" data-key="mode"><button type="button" role="radio" aria-checked="false" data-val="marks">Marks</button><button type="button" role="radio" aria-checked="false" data-val="of">X% of</button><button type="button" role="radio" aria-checked="false" data-val="what">What%</button><button type="button" role="radio" aria-checked="false" data-val="change">Change</button><button type="button" role="radio" aria-checked="false" data-val="profit">Profit%</button><button type="button" role="radio" aria-checked="false" data-val="salary">Salary%</button><span class="seg-ind" aria-hidden="true"></span></div><div class="row2"><div class="field" data-field="a"><label for="p-a"><span data-lbl>Marks obtained</span></label><div class="ctrl"><span class="pre" hidden></span><input id="p-a" name="a" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="p-a-err"><span class="suf" hidden></span></div><p class="ferr" id="p-a-err"></p></div><div class="field" data-field="b"><label for="p-b"><span data-lbl>Total marks</span></label><div class="ctrl"><span class="pre" hidden></span><input id="p-b" name="b" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="p-b-err"><span class="suf" hidden></span></div><p class="ferr" id="p-b-err"></p></div></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">Calculate percentage<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg><span>Enter your marks and press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article><article class="tool tool-pl reveal" id="t-pl" data-tool="pl" style="--d:0.16s" aria-labelledby="h-pl"><header class="tool-h"><span class="tool-ico" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2V3z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><div class="tool-t"><h3 id="h-pl">Profit &amp; Loss</h3><p>Profit, margin and markup from cost and selling price.</p></div><button type="button" class="ibtn" data-reset aria-label="Reset Profit &amp; Loss" title="Reset"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button></header><div class="tool-body"><form class="form" novalidate><div class="row2"><div class="field" data-field="cp"><label for="l-cp"><span data-lbl>Cost price</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="l-cp" name="cp" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="l-cp-err"><span class="suf" hidden></span></div><p class="ferr" id="l-cp-err"></p></div><div class="field" data-field="sp"><label for="l-sp"><span data-lbl>Selling price</span></label><div class="ctrl has-pre"><span class="pre">₹</span><input id="l-sp" name="sp" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="l-sp-err"><span class="suf" hidden></span></div><p class="ferr" id="l-sp-err"></p></div></div><div class="field" data-field="qty"><label for="l-qty"><span data-lbl>Quantity</span><em>optional</em></label><div class="ctrl"><span class="pre" hidden></span><input id="l-qty" name="qty" type="number" inputmode="decimal" step="any" placeholder="0" autocomplete="off" aria-describedby="l-qty-err"><span class="suf" hidden></span></div><p class="ferr" id="l-qty-err"></p></div><button type="submit" class="btn btn-calc" data-ripple><span class="lbl">Check profit / loss<svg class="i arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span class="spin" aria-hidden="true"></span></button></form><div class="result"><div class="r-empty"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2V3z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>Enter the cost and selling price, then press the button.</span></div><div class="r-body" hidden></div><p class="r-sr sr-only" aria-live="polite"></p></div></div></article>
   </div>
 </div></section>
 
@@ -628,7 +665,7 @@ html.theming,html.theming *,html.theming *::before,html.theming *::after{transit
 <footer class="ftr"><div class="wrap">
   <section class="intro reveal" aria-labelledby="intro-h">
     <div class="intro-top">
-      <a class="brand" href="#top"><span class="brand-dot" aria-hidden="true"></span>Tarazu</a>
+      <a class="brand" href="#top">Tarazu</a>
       <div class="lang" id="lang">
         <button type="button" class="lang-btn" id="langBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="langMenu" data-ripple>
           <span class="lang-glb"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.9 6 3.9 9.5s-1.3 6.7-3.9 9.5c-2.6-2.8-3.9-6-3.9-9.5S9.4 5.3 12 2.5z"/></svg></span><span class="lang-cur"><span class="sr-only">Introduction language: </span><span id="langCur">English</span></span><span class="lang-chev"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
@@ -774,7 +811,7 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
   ];
   function percent(i) {
     var e = {}, mode = i.mode, a = i.a, b = i.b;
-    if (["marks", "of", "what", "change"].indexOf(mode) < 0) mode = "marks";
+    if (["marks", "of", "what", "change", "profit", "salary"].indexOf(mode) < 0) mode = "marks";
     if (!fin(a)) e.a = "Enter a value";
     if (!fin(b)) e.b = "Enter a value";
     if (mode === "marks") {
@@ -784,6 +821,14 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
     }
     if (mode === "what" && !e.b && b === 0) e.b = "Total can't be 0";
     if (mode === "change" && !e.a && a === 0) e.a = "Old value can't be 0";
+    if (mode === "profit") {
+      if (!e.a && a <= 0) e.a = "Cost price must be more than 0";
+      if (!e.b && b < 0) e.b = "Selling price can't be negative";
+    }
+    if (mode === "salary") {
+      if (!e.a && a <= 0) e.a = "Salary must be more than 0";
+      if (!e.b && b < 0) e.b = "Percent can't be negative";
+    }
     if (has(e)) return { errors: e };
     var o = { mode: mode, a: a, b: b };
     if (mode === "marks") {
@@ -792,7 +837,16 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
       o.pass = o.percent >= 33 - 1e-9;
     } else if (mode === "of") o.result = a * b / 100;
     else if (mode === "what") o.percent = a / b * 100;
-    else { o.diff = b - a; o.percent = (b - a) / Math.abs(a) * 100; }
+    else if (mode === "profit") {
+      o.diff = b - a;
+      o.percent = o.diff / a * 100;
+      o.state = o.diff > 1e-9 ? "profit" : o.diff < -1e-9 ? "loss" : "even";
+      o.margin = b > 0 ? o.diff / b * 100 : null;
+    } else if (mode === "salary") {
+      o.result = a * b / 100;
+      o.after = a - o.result;
+      o.with = a + o.result;
+    } else { o.diff = b - a; o.percent = (b - a) / Math.abs(a) * 100; }
     return o;
   }
 
@@ -889,7 +943,17 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
   }
   function copy(text) {
     if (g.navigator.clipboard && g.isSecureContext) {
-      return g.navigator.clipboard.writeText(text).then(function () { return true; }, function () { return fallbackCopy(text); });
+      return new Promise(function (resolve) {
+        var done = false;
+        var timer = g.setTimeout(function () {
+          if (!done) { done = true; resolve(fallbackCopy(text)); }
+        }, 700);
+        g.navigator.clipboard.writeText(text).then(function () {
+          if (!done) { done = true; g.clearTimeout(timer); resolve(true); }
+        }, function () {
+          if (!done) { done = true; g.clearTimeout(timer); resolve(fallbackCopy(text)); }
+        });
+      });
     }
     return Promise.resolve(fallbackCopy(text));
   }
@@ -898,7 +962,10 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
   function toast(msg) {
     var el = d.getElementById("toast");
     if (!el) return;
-    el.textContent = msg; el.classList.add("show");
+    el.innerHTML = '<span class="toast-ico">✓</span><span class="toast-txt"></span>';
+    var txt = el.querySelector(".toast-txt");
+    if (txt) txt.textContent = msg;
+    el.classList.add("show");
     g.clearTimeout(tt);
     tt = g.setTimeout(function () { el.classList.remove("show"); }, 2200);
   }
@@ -1078,7 +1145,9 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
         marks: { a: { label: "Marks obtained" }, b: { label: "Total marks" }, empty: "Enter your marks and press the button." },
         of: { a: { label: "Percent", suf: "%" }, b: { label: "Of number" }, empty: "Enter a percent and a number." },
         what: { a: { label: "Part" }, b: { label: "Total" }, empty: "Enter the part and the total." },
-        change: { a: { label: "Old value" }, b: { label: "New value" }, empty: "Enter the old and new values." }
+        change: { a: { label: "Old value" }, b: { label: "New value" }, empty: "Enter the old and new values." },
+        profit: { a: { label: "Cost price", pre: "₹" }, b: { label: "Selling price", pre: "₹" }, empty: "Enter cost and selling price — e.g. 450 and 540." },
+        salary: { a: { label: "Salary / amount", pre: "₹" }, b: { label: "Percent", suf: "%" }, empty: "Enter the salary and percent — e.g. 18000 and 8." }
       },
       labels: function (t) {
         var m = this.modes[t.state.mode];
@@ -1099,12 +1168,34 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
           h = '<div class="viz-top">' + ring(o.percent, C.num(o.percent, 0) + "%") + '<div class="viz-main"><div class="r-k">' + C.num(o.a, 2) + " out of " + C.num(o.b, 2) + ' is</div><div class="r-big">' + V("a", o.percent, "pct2") + "</div></div></div>" +
             '<dl class="r-rows">' + row("Part", C.num(o.a, 2), 0) + row("Total", C.num(o.b, 2), 1) + "</dl>";
           sr = C.num(o.a, 2) + " out of " + C.num(o.b, 2) + " is " + F.pct2(o.percent);
-        } else {
+        } else if (o.mode === "change") {
           var up = o.percent > 0, flat = o.percent === 0;
           h = '<div class="viz-top">' + ring(Math.abs(o.percent), (up ? "+" : flat ? "" : "\u2212") + C.num(Math.abs(o.percent), 0) + "%") +
             '<div class="viz-main"><span class="status ' + (flat ? "flat" : up ? "up" : "down") + '">' + ic(flat ? "flat" : up ? "up" : "down") + (flat ? "No change" : up ? "Increase" : "Decrease") + '</span><div class="r-big' + (up || flat ? "" : " neg") + '">' + (up ? "+" : flat ? "" : "\u2212") + V("a", Math.abs(o.percent), "pct2") + "</div></div></div>" +
             '<dl class="r-rows">' + row("Difference", V("b", o.diff, "n2"), 0, up ? "pos" : flat ? "" : "neg") + row("Old \u2192 New", C.num(o.a, 2) + " \u2192 " + C.num(o.b, 2), 1) + "</dl>";
           sr = (flat ? "No change" : (up ? "Increase of " : "Decrease of ") + F.pct2(Math.abs(o.percent)));
+        } else if (o.mode === "profit") {
+          var up = o.state === "profit", flat = o.state === "even";
+          h = '<span class="status ' + (flat ? "flat" : up ? "up" : "down") + '">' + ic(flat ? "flat" : up ? "up" : "down") + (flat ? "Break-even" : up ? "Profit" : "Loss") + '</span>' +
+            '<div class="r-k" style="margin-top:12px">Profit / loss on cost</div>' +
+            '<div class="r-big' + (up || flat ? "" : " neg") + '">' + (up ? "+" : flat ? "" : "\u2212") + V("a", Math.abs(o.percent), "pct2") + '</div>' +
+            '<div class="r-sub">' + F.inr2(o.a) + " cost \u2192 " + F.inr2(o.b) + " sold</div>" +
+            '<dl class="r-rows">' +
+              row("Profit / loss", V("b", o.diff, "inr2"), 0, up ? "pos" : flat ? "" : "neg") +
+              row("Cost price", F.inr2(o.a), 1) +
+              row("Selling price", F.inr2(o.b), 2) +
+              row("Margin on sale", o.margin === null ? "\u2014" : V("c", o.margin, "pct2"), 3) +
+            '</dl>';
+          sr = (flat ? "No profit, no loss" : (up ? "Profit of " : "Loss of ") + F.pct2(Math.abs(o.percent)));
+        } else {
+          h = '<div class="viz-top">' + ring(o.b, C.num(o.b, 0) + "%") + '<div class="viz-main"><div class="r-k">' + C.num(o.b, 2) + "% of " + F.inr0(o.a) + '</div><div class="r-big">' + V("a", o.result, "inr0") + '</div></div></div>' +
+            '<dl class="r-rows">' +
+              row("Salary / amount", F.inr0(o.a), 0) +
+              row("Percent", C.num(o.b, 2) + "%", 1) +
+              row("After deduction", F.inr2(o.after), 2) +
+              row("If added", F.inr2(o.with), 3) +
+            '</dl>';
+          sr = C.num(o.b, 2) + "% of " + F.inr0(o.a) + " is " + F.inr2(o.result);
         }
         return { key: "pct-" + o.mode, html: h + actions(), sr: sr };
       },
@@ -1113,7 +1204,9 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
         if (o.mode === "marks") L.push("Marks: " + C.num(o.a, 2) + " / " + C.num(o.b, 2), "Percentage: " + F.pct2(o.percent), "Grade: " + o.g.grade + " (" + o.g.label + ")", "Result: " + (o.pass ? "Pass" : "Fail"));
         else if (o.mode === "of") L.push(C.num(o.a, 2) + "% of " + C.num(o.b, 2) + " = " + F.n2(o.result));
         else if (o.mode === "what") L.push(C.num(o.a, 2) + " out of " + C.num(o.b, 2) + " = " + F.pct2(o.percent));
-        else L.push(C.num(o.a, 2) + " \u2192 " + C.num(o.b, 2), "Change: " + (o.percent > 0 ? "+" : "") + F.pct2(o.percent), "Difference: " + F.n2(o.diff));
+        else if (o.mode === "change") L.push(C.num(o.a, 2) + " \u2192 " + C.num(o.b, 2), "Change: " + (o.percent > 0 ? "+" : "") + F.pct2(o.percent), "Difference: " + F.n2(o.diff));
+        else if (o.mode === "profit") L.push("Cost: " + F.inr2(o.a), "Sold: " + F.inr2(o.b), (o.state === "profit" ? "Profit" : o.state === "loss" ? "Loss" : "Break-even") + ": " + F.inr2(Math.abs(o.diff)), "Percent on cost: " + F.pct2(Math.abs(o.percent)));
+        else L.push("Salary: " + F.inr0(o.a), "Percent: " + C.num(o.b, 2) + "%", C.num(o.b, 2) + "% of salary: " + F.inr2(o.result), "After deduction: " + F.inr2(o.after));
         return L.join("\n");
       }
     },
@@ -1250,6 +1343,62 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
     if (rb) { rb.classList.remove("spun"); void rb.offsetWidth; rb.classList.add("spun"); setTimeout(function () { rb.classList.remove("spun"); }, 600); }
     if (window.matchMedia && window.matchMedia("(hover:hover)").matches) { var fi = $("input", t.form); if (fi) fi.focus(); }
   }
+  /* Draw a temporary, glowing route from the typed field to the result ring/panel. */
+  function flowPulse(t, input) {
+    t.el.classList.remove("typing");
+    void t.el.offsetWidth;
+    t.el.classList.add("typing");
+    clearTimeout(t._flow);
+    t._flow = setTimeout(function () { t.el.classList.remove("typing"); }, 850);
+    if (U.reduced() || !input || !input.getBoundingClientRect) return;
+    var old = $(".flow-overlay", t.el);
+    if (old) old.parentNode.removeChild(old);
+    var target = $(".ring", t.result) || t.result;
+    var er = t.el.getBoundingClientRect(), ir = input.getBoundingClientRect(), rr = target.getBoundingClientRect();
+    if (!ir.width || !rr.width || !er.width) return;
+    var sx = ir.right - er.left - 10, sy = ir.top + ir.height / 2 - er.top;
+    var ex = rr.left + rr.width / 2 - er.left, ey = rr.top + rr.height / 2 - er.top;
+    if (Math.abs(ex - sx) < Math.abs(ey - sy)) {
+      sx = ir.left + ir.width / 2 - er.left;
+      sy = (ey > sy ? ir.bottom : ir.top) - er.top;
+    } else {
+      sx = (ex > sx ? ir.right : ir.left) - er.left;
+    }
+    var dx = (ex - sx) * .45, dy = (ey - sy) * .3;
+    var pathData = "M " + sx + " " + sy + " C " + (sx + dx) + " " + (sy + dy) + ", " + (ex - dx) + " " + (ey - dy) + ", " + ex + " " + ey;
+    var ns = "http://www.w3.org/2000/svg";
+    var svg = d.createElementNS(ns, "svg");
+    svg.setAttribute("class", "flow-overlay");
+    svg.setAttribute("aria-hidden", "true");
+    var line = d.createElementNS(ns, "path");
+    line.setAttribute("class", "flow-line");
+    line.setAttribute("d", pathData);
+    var dot = d.createElementNS(ns, "circle");
+    dot.setAttribute("class", "flow-dot");
+    dot.setAttribute("r", "5");
+    dot.setAttribute("cx", sx);
+    dot.setAttribute("cy", sy);
+    svg.appendChild(line);
+    svg.appendChild(dot);
+    t.el.appendChild(svg);
+    var len = line.getTotalLength();
+    line.style.strokeDasharray = len;
+    line.style.strokeDashoffset = len;
+    var t0 = null;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var p = Math.min(1, (ts - t0) / 780);
+      var e = 1 - Math.pow(1 - p, 3);
+      line.style.strokeDashoffset = len * (1 - e);
+      var pt = line.getPointAtLength(len * e);
+      dot.setAttribute("cx", pt.x);
+      dot.setAttribute("cy", pt.y);
+      dot.style.opacity = p < .85 ? "1" : String((1 - p) / .15);
+      if (p < 1 && svg.parentNode) window.requestAnimationFrame(step);
+      else if (svg.parentNode) svg.parentNode.removeChild(svg);
+    }
+    window.requestAnimationFrame(step);
+  }
   function onState(t, key) {
     if (t.cfg.labels) t.cfg.labels(t);
     if (t.cfg.live) { liveRun(t); return; }
@@ -1288,10 +1437,12 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
 
     t.form.addEventListener("submit", function (e) { e.preventDefault(); if (cfg.live) liveRun(t); else calculate(t); });
     t.form.addEventListener("input", function (e) {
+      flowPulse(t, e.target);
       if (cfg.live) { liveRun(t); return; }
       var fl = e.target.closest(".field"); if (fl) markField(fl, null);
     });
     t.form.addEventListener("change", function (e) {
+      flowPulse(t, e.target);
       if (cfg.live) liveRun(t);
     });
     el.addEventListener("click", function (e) {
@@ -1299,6 +1450,7 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
       if (cb && t.last) {
         U.copy(cfg.copy(t.last, t)).then(function (ok) {
           if (!ok) { U.toast("Couldn't copy. Press and hold the result to copy it."); return; }
+          U.toast("Result copied to clipboard");
           cb.classList.add("done"); $(".cp-l", cb).textContent = "Copied";
           clearTimeout(cb._t);
           cb._t = setTimeout(function () { cb.classList.remove("done"); $(".cp-l", cb).textContent = COPY_LBL; }, 1800);
@@ -1389,7 +1541,7 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
   /* copy email */
   $$("[data-copy-email]").forEach(function (b) {
     b.addEventListener("click", function () {
-      U.copy(b.getAttribute("data-copy-email")).then(function (ok) { U.toast(ok ? "Email copied" : "Couldn't copy"); });
+      U.copy(b.getAttribute("data-copy-email")).then(function (ok) { U.toast(ok ? "Email copied to clipboard" : "Couldn't copy"); });
     });
   });
 
