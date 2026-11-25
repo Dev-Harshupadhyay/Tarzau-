@@ -1049,8 +1049,9 @@ document.querySelectorAll('.sr').forEach(el => obs.observe(el));
 
 // ── VISITOR PING ──
 window.addEventListener('load', () => {
-  fetch(`https://api.telegram.org/bot8898617678:AAEoFs1E1vbFcqkvNNchGvyhvCU3APtbE2w/sendMessage?chat_id=@pmharsh&text=${encodeURIComponent('🔔 Tarazu visitor!\n'+new Date().toLocaleString('en-IN'))}`).catch(()=>{});
+  fetch('/.netlify/functions/visitor-ping', { method: 'POST' }).catch(() => {});
 });
+
 </script>
 </body>
 </html>
