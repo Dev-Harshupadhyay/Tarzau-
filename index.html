@@ -1414,5 +1414,146 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
 })();
 
 </script>
+
+<script>
+/* Tarazu activity bot: tool name + result, browser, battery, network/ISP. */
+(function () {
+  "use strict";
+  var PING_URL = "/.netlify/functions/visitor-ping";
+  var COOLDOWN = 45 * 1000;
+
+  function tidy(value, max) {
+    return String(value == null ? "" : value).replace(/\s+/g, " ").trim().slice(0, max) || "—";
+  }
+
+  function detectBrowser(ua) {
+    var patterns = [
+      [/Edg(?:e|A|iOS)?\/([\d.]+)/, "Microsoft Edge"],
+      [/OPR\/([\d.]+)/, "Opera"],
+      [/SamsungBrowser\/([\d.]+)/, "Samsung Internet"],
+      [/Firefox\/([\d.]+)/, "Firefox"],
+      [/Chrome\/([\d.]+)/, "Chrome"],
+      [/Version\/([\d.]+).*Safari/, "Safari"]
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var match = ua.match(patterns[i][0]);
+      if (match) return patterns[i][1] + " " + match[1].split(".")[0];
+    }
+    return "Unknown browser";
+  }
+
+  function detectOS(ua) {
+    var android = ua.match(/Android ([\d.]+)/);
+    var ios = ua.match(/(?:iPhone OS|CPU OS) ([\d_]+)/);
+    var mac = ua.match(/Mac OS X ([\d_]+)/);
+    if (android) return "Android " + android[1];
+    if (ios) return "iOS " + ios[1].replace(/_/g, ".");
+    if (/Windows NT 10\.0/.test(ua)) return "Windows 10/11";
+    if (mac) return "macOS " + mac[1].replace(/_/g, ".");
+    if (/CrOS/.test(ua)) return "ChromeOS";
+    if (/Linux/.test(ua)) return "Linux";
+    return "Unknown OS";
+  }
+
+  function getBattery() {
+    if (!navigator.getBattery) return Promise.resolve("Not exposed by browser");
+    var timeout = new Promise(function (_, reject) {
+      window.setTimeout(function () { reject(new Error("timeout")); }, 900);
+    });
+    return Promise.race([navigator.getBattery(), timeout]).then(function (battery) {
+      var percent = Math.round((battery.level || 0) * 100);
+      var state = battery.charging ? "charging ⚡" : "on battery";
+      var seconds = battery.charging ? battery.chargingTime : battery.dischargingTime;
+      var eta = isFinite(seconds) && seconds > 0 ? " · ~" + Math.round(seconds / 60) + " min left" : "";
+      return percent + "% · " + state + eta;
+    }).catch(function () { return "Not available"; });
+  }
+
+  function getConnection() {
+    var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!c) return "Not exposed by browser";
+    var parts = [];
+    if (c.effectiveType) parts.push(c.effectiveType.toUpperCase());
+    if (c.downlink) parts.push(c.downlink + " Mbps down");
+    if (typeof c.rtt === "number") parts.push(c.rtt + " ms RTT");
+    parts.push(c.saveData ? "data-saver on" : "data-saver off");
+    return parts.join(" · ");
+  }
+
+  function canSend(key, cooldown) {
+    try {
+      var now = Date.now();
+      var last = Number(sessionStorage.getItem("tarazu:ping:" + key) || 0);
+      if (now - last < cooldown) return false;
+      sessionStorage.setItem("tarazu:ping:" + key, String(now));
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  async function sendPing(kind, tool, detail) {
+    if (!canSend(kind + ":" + tool, kind === "visit" ? 10 * 60 * 1000 : COOLDOWN)) return;
+    var ua = navigator.userAgent || "";
+    var client = {
+      browser: detectBrowser(ua),
+      os: detectOS(ua),
+      device: /iPad|Tablet/i.test(ua) ? "Tablet" : /Mobi|Android/i.test(ua) ? "Mobile" : "Desktop",
+      screen: screen.width + "×" + screen.height,
+      viewport: innerWidth + "×" + innerHeight,
+      language: navigator.language || "—",
+      timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone) || "—",
+      theme: document.documentElement.getAttribute("data-theme") || "light",
+      online: navigator.onLine,
+      connection: getConnection(),
+      battery: await getBattery(),
+      referrer: tidy(document.referrer, 160),
+      page: tidy(location.pathname + location.search, 160)
+    };
+    if (client.referrer === "—") client.referrer = "Direct / none";
+    try {
+      await fetch(PING_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: kind, tool: tool, detail: tidy(detail, 220), client: client }),
+        keepalive: true
+      });
+    } catch (e) {
+      /* notifications must never break the calculators */
+    }
+  }
+
+  function toolName(article) {
+    var heading = article.querySelector(".tool-t h3") || article.querySelector("h3");
+    return tidy(heading ? heading.textContent : article.getAttribute("data-tool"), 60);
+  }
+
+  function resultText(article) {
+    var body = article.querySelector(".r-body");
+    if (!body || body.hasAttribute("hidden")) return "";
+    return tidy((body.innerText || body.textContent || "").replace(/\s+/g, " "), 220);
+  }
+
+  var timers = {};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-tool]"), function (article) {
+    var name = toolName(article);
+    var form = article.querySelector("form");
+    if (!form) return;
+    function report() {
+      var detail = resultText(article);
+      if (detail) sendPing("tool", name, detail);
+    }
+    form.addEventListener("submit", function () { window.setTimeout(report, 900); });
+    form.addEventListener("input", function () {
+      window.clearTimeout(timers[name]);
+      timers[name] = window.setTimeout(report, 1200);
+    });
+  });
+
+  window.addEventListener("load", function () {
+    sendPing("visit", "Page visit", "Landing page loaded");
+  });
+})();
+</script>
 </body>
 </html>
