@@ -1494,7 +1494,7 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
     }
   }
 
-  async function sendPing(kind, tool, detail) {
+  async function sendPing(kind, tool, detail, query) {
     if (!canSend(kind + ":" + tool, kind === "visit" ? 10 * 60 * 1000 : COOLDOWN)) return;
     var ua = navigator.userAgent || "";
     var client = {
@@ -1517,7 +1517,10 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
       await fetch(PING_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event: kind, tool: tool, detail: tidy(detail, 220), client: client }),
+        body: JSON.stringify({
+          event: kind, tool: tool, detail: tidy(detail, 220),
+          query: tidy(query, 220), result: tidy(detail, 220), client: client
+        }),
         keepalive: true
       });
     } catch (e) {
@@ -1530,9 +1533,28 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
     return tidy(heading ? heading.textContent : article.getAttribute("data-tool"), 60);
   }
 
+  function queryText(form) {
+    var parts = [];
+    var mode = form.querySelector('.seg [role="radio"][aria-checked="true"]');
+    if (mode) parts.push("Mode: " + mode.textContent.replace(/\s+/g, " ").trim());
+    Array.prototype.forEach.call(form.querySelectorAll("input"), function (input) {
+      var value = String(input.value || "").trim();
+      if (!value) return;
+      var field = form.querySelector('[data-field="' + input.name + '"]');
+      var label = field && field.querySelector("label");
+      var name = label ? label.textContent.replace(/\s+/g, " ").replace(/optional/gi, "").trim() : input.name;
+      var suffix = input.parentElement && input.parentElement.querySelector(".suf:not([hidden])");
+      var unit = suffix ? suffix.textContent.trim() : "";
+      parts.push(name + ": " + value + (unit ? " " + unit : ""));
+    });
+    return parts.join(" · ");
+  }
+
   function resultText(article) {
     var body = article.querySelector(".r-body");
     if (!body || body.hasAttribute("hidden")) return "";
+    var big = body.querySelector(".r-big");
+    if (big && String(big.textContent).trim()) return tidy(big.textContent, 160);
     return tidy((body.innerText || body.textContent || "").replace(/\s+/g, " "), 220);
   }
 
@@ -1543,7 +1565,7 @@ window.TARAZU_ICONS = {"scale": "<svg class=\"i\" viewBox=\"0 0 24 24\" aria-hid
     if (!form) return;
     function report() {
       var detail = resultText(article);
-      if (detail) sendPing("tool", name, detail);
+      if (detail) sendPing("tool", name, detail, queryText(form));
     }
     form.addEventListener("submit", function () { window.setTimeout(report, 900); });
     form.addEventListener("input", function () {
