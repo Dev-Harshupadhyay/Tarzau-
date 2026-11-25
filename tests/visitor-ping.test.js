@@ -76,24 +76,25 @@ test('sends the tree-style alert with search, result, IP, ISP, device and batter
   assert.equal(payload.chat_id, '@tester');
   assert.equal(payload.parse_mode, 'HTML');
   for (const expected of [
-    '⚡ TARAZU · TOOL USED',
-    'SEARCH &amp; RESULT',
-    '├ Tool: <b>Weight Calculator</b>',
-    '├ Search: ₹40/kg price · ₹15 budget',
-    '└ Result: <b>375 g</b>',
+    '⚡ <b>TARAZU · TOOL USED</b>',
+    '🔍 <b>WHAT WAS SEARCHED</b>',
+    '├ <b>Tool:</b> <b>Weight Calculator</b>',
+    '├ <b>Search:</b> <code>₹40/kg price · ₹15 budget</code>',
+    '├ <b>Answer:</b> <b>375 g</b>',
+    '└ <b>By:</b> <b>Desktop · 🖥️ · Chrome 131 · 49.36.10.25</b>',
     '📍 <b>LOCATION &amp; NETWORK</b>',
-    '├ IP: 49.36.10.25',
-    '├ ISP: Reliance Jio',
-    '├ Location: Delhi, Delhi, IN',
+    '├ <b>IP:</b> <code>49.36.10.25</code>',
+    '├ <b>ISP:</b> <b>Reliance Jio</b>',
+    '├ <b>Where:</b> <b>Delhi, Delhi, IN</b>',
     '📱 <b>DEVICE DETAILS</b>',
-    '├ Device: Desktop 🖥️',
-    '├ OS: Linux 🐧',
-    '├ Browser: Chrome 131',
-    '├ Battery: 🔋 72% · charging ⚡'
+    '├ <b>Device:</b> <b>Desktop 🖥️</b>',
+    '├ <b>OS:</b> <b>Linux 🐧</b>',
+    '├ <b>Browser:</b> <b>Chrome 131</b>',
+    '├ <b>Battery:</b> 🔋 <b>72% · charging ⚡</b>'
   ]) {
     assert.ok(payload.text.includes(expected), `message should contain: ${expected}`);
   }
-  assert.match(payload.text, /🇮🇳 IST: <b>/);
+  assert.match(payload.text, /🇮🇳 <b>IST:<\/b> <b>/);
   assert.equal(payload.reply_markup.inline_keyboard[0][0].text, 'Open Tarazu ↗');
 });
 
@@ -104,7 +105,7 @@ test('falls back gracefully when IP lookup fails', async () => {
   const result = await functionModule.handler(makeEvent());
 
   assert.equal(result.statusCode, 200);
-  assert.match(telegramCall().payload.text, /ISP: IP lookup unavailable/);
+  assert.match(telegramCall().payload.text, /<b>ISP:<\/b> <b>IP lookup unavailable<\/b>/);
 });
 
 test('escapes user-controlled text and never leaks the token into the message', async () => {
