@@ -1,11 +1,11 @@
 // Netlify Function: Telegram activity bot for Tarazu.
-// The bot token stays on the server; the browser only sends anonymous-ish
-// diagnostic fields that are rendered into a readable Telegram message.
+// The bot token stays on the server; the browser only sends diagnostic fields
+// which are rendered into a compact, readable Telegram alert.
 
 const TELEGRAM_API = "https://api.telegram.org";
 const SITE_URL = "https://tarzau.netlify.app";
 const MAX_BODY_BYTES = 12_000;
-const IP_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const IP_CACHE_TTL = 30 * 60 * 1000;
 const ipCache = new Map();
 
 const RESPONSE_HEADERS = {
@@ -31,9 +31,14 @@ function clean(value, max) {
     .slice(0, max) || "Unknown";
 }
 
-// Only the production site, its Netlify deploy previews, and local dev are allowed.
+function optional(value, max) {
+  const text = clean(value, max);
+  return text === "Unknown" ? "" : text;
+}
+
+// Production site, its Netlify deploy previews, and local dev are allowed.
 function isOriginAllowed(origin) {
-  if (!origin) return true; // non-browser callers (health checks, tests)
+  if (!origin) return true;
   const extra = (process.env.ALLOWED_ORIGINS || "")
     .split(",").map((s) => s.trim()).filter(Boolean);
   if (extra.includes(origin)) return true;
@@ -55,16 +60,19 @@ function isPrivateIp(ip) {
     || !ip.includes(".") && !ip.includes(":");
 }
 
-// ISP is derived from the visitor's public IP. ipwho.is is free and needs no key.
+// ISP + approximate location from the public IP. ipwho.is needs no API key.
 async function lookupNetwork(ip) {
-  const fallback = { isp: "IP lookup unavailable", org: "", asn: "", city: "", country: "" };
+  const fallback = {
+    ip: ip || "Unknown", isp: "IP lookup unavailable", org: "",
+    asn: "", city: "", region: "", country: ""
+  };
   if (!ip || isPrivateIp(ip)) return { ...fallback, isp: "Local / private IP" };
 
   const cached = ipCache.get(ip);
   if (cached && Date.now() - cached.at < IP_CACHE_TTL) return cached.data;
 
   try {
-    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}?fields=success,connection,city,country`, {
+    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}?fields=success,connection,city,region,country`, {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(2500)
     });
@@ -73,10 +81,12 @@ async function lookupNetwork(ip) {
     if (data.success === false) return fallback;
     const connection = data.connection || {};
     const result = {
+      ip,
       isp: clean(connection.isp || connection.org || "Unknown ISP", 90),
       org: clean(connection.org || "", 90),
       asn: clean(connection.asn || "", 40),
       city: clean(data.city || "", 60),
+      region: clean(data.region || "", 60),
       country: clean(data.country || "", 60)
     };
     if (ipCache.size > 500) ipCache.delete(ipCache.keys().next().value);
@@ -87,45 +97,81 @@ async function lookupNetwork(ip) {
   }
 }
 
-function buildMessage({ eventType, tool, detail, client, network }) {
+function tree(rows) {
+  const items = rows.filter((row) => row !== null && row !== "");
+  return items.map((row, index) => `${index === items.length - 1 ? "└" : "├"} ${row}`);
+}
+
+function deviceEmoji(device) {
+  if (/tablet/i.test(device)) return "📟";
+  if (/mobile/i.test(device)) return "📱";
+  return "🖥️";
+}
+
+function osEmoji(os) {
+  if (/windows/i.test(os)) return "🪟";
+  if (/android/i.test(os)) return "🤖";
+  if (/ios|mac/i.test(os)) return "🍎";
+  if (/chrome\s*os|cros/i.test(os)) return "💻";
+  if (/linux/i.test(os)) return "🐧";
+  return "💻";
+}
+
+function buildMessage({ eventType, tool, detail, query, result, client, network }) {
   const time = new Date().toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "medium"
   });
 
-  const lines = [
-    "🔔 TARAZU · LIVE ACTIVITY",
-    "",
-    eventType === "tool"
-      ? "🛠️ <b>Kisi ne Tarazu ka tool use kiya!</b>"
-      : "👋 <b>Ek naya visitor Tarazu par aaya!</b>",
-    "",
-    "🧰 <b>WHAT HAPPENED</b>",
-    `• Tool: <b>${escapeHtml(tool)}</b>`,
-    detail ? `• Input / result: ${escapeHtml(detail)}` : null,
-    `• Time (IST): ${escapeHtml(time)}`,
-    "",
-    "🌐 <b>NETWORK</b>",
-    `• ISP: ${escapeHtml(network.isp)}`,
-    network.asn && network.asn !== "Unknown" ? `• ASN: ${escapeHtml(network.asn)}` : null,
-    network.city || network.country
-      ? `• Location (IP based): ${escapeHtml([network.city, network.country].filter(Boolean).join(", "))}`
-      : null,
-    `• Browser network: ${escapeHtml(client.connection)}`,
-    "",
-    "📱 <b>DEVICE &amp; BROWSER</b>",
-    `• Browser: ${escapeHtml(client.browser)} on ${escapeHtml(client.os)}`,
-    `• Device: ${escapeHtml(client.device)} · ${escapeHtml(client.screen)} screen · ${escapeHtml(client.viewport)} viewport`,
-    `• Battery: ${escapeHtml(client.battery)}`,
-    `• Language: ${escapeHtml(client.language)} · Timezone: ${escapeHtml(client.timezone)}`,
-    `• Theme: ${escapeHtml(client.theme)} · Online: ${client.online ? "Yes" : "No"}`,
-    `• Referrer: ${escapeHtml(client.referrer)}`,
-    client.page && client.page !== "Unknown" ? `• Page: ${escapeHtml(client.page)}` : null,
-    "",
-    "————————————",
-    "Tarazu Bot · built for Harsh ✨"
+  const searchRows = [];
+  if (eventType === "tool") {
+    searchRows.push(`Tool: <b>${escapeHtml(tool)}</b>`);
+    if (query) searchRows.push(`Search: ${escapeHtml(query)}`);
+    const finalResult = result || detail;
+    if (finalResult) searchRows.push(`Result: <b>${escapeHtml(finalResult)}</b>`);
+  } else {
+    const page = client.page && client.page !== "Unknown" ? client.page : "/";
+    searchRows.push(`Page: <b>${escapeHtml(page)}</b>`);
+    searchRows.push(`Status: ${escapeHtml(detail || "Landing page loaded")}`);
+  }
+
+  const location = [network.city, network.region, network.country].filter(Boolean).join(", ");
+  const networkRows = [
+    `IP: ${escapeHtml(network.ip)}`,
+    `ISP: ${escapeHtml(network.isp)}`,
+    location ? `Location: ${escapeHtml(location)}` : null,
+    `Connection: ${escapeHtml(client.connection)}`
   ];
 
-  return lines.filter((line) => line !== null).join("\n").slice(0, 3800);
+  const deviceRows = [
+    `Device: ${escapeHtml(client.device)} ${deviceEmoji(client.device)}`,
+    `OS: ${escapeHtml(client.os)} ${osEmoji(client.os)}`,
+    `Browser: ${escapeHtml(client.browser)}`,
+    `Screen: ${escapeHtml(client.screen)} (viewport ${escapeHtml(client.viewport)})`,
+    `Battery: 🔋 ${escapeHtml(client.battery)}`,
+    `Timezone: ${escapeHtml(client.timezone)}`,
+    `Language: ${escapeHtml(client.language)}`,
+    `Theme: ${escapeHtml(client.theme)} · Online: ${client.online ? "Yes" : "No"}`,
+    client.referrer && client.referrer !== "Unknown" ? `Referrer: ${escapeHtml(client.referrer)}` : null
+  ];
+
+  return [
+    `⚡ TARAZU · ${eventType === "tool" ? "TOOL USED" : "NEW VISITOR"}`,
+    "",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "",
+    "🔍 <b>SEARCH &amp; RESULT</b>",
+    ...tree(searchRows),
+    "",
+    "📍 <b>LOCATION &amp; NETWORK</b>",
+    ...tree(networkRows),
+    "",
+    "📱 <b>DEVICE DETAILS</b>",
+    ...tree(deviceRows),
+    "",
+    `🇮🇳 IST: <b>${escapeHtml(time)}</b>`,
+    "━━━━ ━━━━━━━━━━━━━━━━",
+    "Tarazu Bot · built for Harsh ✨"
+  ].join("\n").slice(0, 3800);
 }
 
 function normaliseClient(raw) {
@@ -180,11 +226,13 @@ exports.handler = async (event) => {
   }
 
   const eventType = payload.event === "tool" ? "tool" : "visit";
-  const tool = clean(payload.tool, 80);
-  const detail = clean(payload.detail, 260);
+  const tool = optional(payload.tool, 80);
+  const detail = optional(payload.detail, 260);
+  const query = optional(payload.query, 220);
+  const result = optional(payload.result, 220);
   const client = normaliseClient(payload.client);
   const network = await lookupNetwork(clientIp(event));
-  const text = buildMessage({ eventType, tool, detail, client, network });
+  const text = buildMessage({ eventType, tool, detail, query, result, client, network });
 
   try {
     const response = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {

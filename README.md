@@ -8,12 +8,11 @@ On a page visit or after any calculator produces a result, `index.html` posts a 
 
 1. Keeps the Telegram bot token on the server (never in browser code).
 2. Looks up the visitor's ISP from the request IP via `ipwho.is` (cached 30 min, no API key).
-3. Builds a readable Telegram alert with:
-   - which tool was used and the input/result summary,
-   - browser + version and OS (from the user agent), device type, screen/viewport,
-   - battery level and charging state when the browser exposes it,
-   - network type, ISP, ASN and approximate IP location,
-   - language, timezone, theme, referrer and IST timestamp.
+3. Builds a tree-style Telegram alert with:
+   - `SEARCH & RESULT` — which tool was used, the inputs entered and the final answer,
+   - `LOCATION & NETWORK` — IP, ISP, approximate city/region/country and browser connection,
+   - `DEVICE DETAILS` — device, OS, browser, screen/viewport, battery level and charging state,
+   - language, timezone, theme, referrer, IST timestamp and an "Open Tarazu" button.
 
 Browsers that block the Battery Status API report `Not exposed by browser`; IP lookups that fail report `IP lookup unavailable`. Notifications are throttled in the browser: one visit alert per 10 minutes, one alert per tool per 45 seconds (per tab session).
 
